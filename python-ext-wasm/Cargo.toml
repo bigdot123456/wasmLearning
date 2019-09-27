@@ -1,0 +1,27 @@
+[package]
+name = "wasmer"
+version = "0.3.0"
+authors = ["The Wasmer Engineering Team <engineering@wasmer.io>"]
+edition = "2018"
+description = "Python extension to run WebAssembly binaries"
+readme = "README.md"
+repository = "https://github.com/wasmerio/python-ext-wasm"
+keywords = ["python", "extension", "webassembly"]
+categories = ["wasm"]
+build = "build.rs"
+
+[lib]
+name = "wasmer"
+crate-type = ["cdylib"]
+
+[dependencies]
+wasmer-runtime = "0.6.0"
+wasmer-runtime-core = "0.6.0"
+pyo3 = { version = "0.7.0", features = ["extension-module"] }
+
+[package.metadata.pyo3-pack]
+classifier = [
+    "Programming Language :: Python",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
