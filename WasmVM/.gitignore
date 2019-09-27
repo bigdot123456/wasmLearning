@@ -1,0 +1,20 @@
+# ignore all object file 
+*.o
+build*/
+
+# ignore .vscode
+.vscode/
+
+# ignore config
+WasmVm.cfg 
+
+# ignore node module
+node_modules/
+
+# ignore dia temporary
+*.dia~
+
+.bash_history
+
+# ignore mac ds_store
+.DS_Store
