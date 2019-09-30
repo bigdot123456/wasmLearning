@@ -1,5 +1,10 @@
 # Awesome Wasm 
 
+## Add command for test pattern
+```sh
+git submodule add https://github.com/skymizer/SkyPat WasmVM/cmake-build-debug/SkyPat/src/SkyPat
+```
+
 Collection of awesome things regarding WebAssembly (wasm) ecosystem.
 
 Please read the [contribution guidelines](CONTRIBUTING.md) if you want to contribute.
