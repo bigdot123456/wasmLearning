@@ -1,12 +1,65 @@
 <!-- "doc" type, with tabs usage as template--><!-- Author: Kevin Cyu--><!-- Include mixin--><!-- mixin - list--><!-- Main--><!DOCTYPE html><html><!-- Include head--><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>WasmVM</title><!-- Select the theme--><link rel="stylesheet" href="./asset/paper.min.css"><link rel="stylesheet" href="./asset/monokai.css"><link rel="stylesheet" href="./asset/main.css"><link rel="stylesheet" href="./asset/cn-font.css"><link rel="stylesheet" href="./asset/highlight.min.css"><script type="text/x-mathjax-config">MathJax.Hub.Config({ jax: ["input/TeX", "output/HTML-CSS"], extensions: ["tex2jax.js"], "HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }, tex2jax: { inlineMath: [ ["$", "$"], ["\\(","\\)"] ], displayMath: [ ["$$","$$"], ["\\[", "\\]"] ], processEscapes: true, ignoreClass: "tex2jax_ignore|dno" }, TeX: { noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } } }, messageStyle: "none"});</script><script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script><script src="./asset/highlight.min.js"></script><script>hljs.initHighlightingOnLoad();</script></head><body><div class="container"><div class="paper"><div class="demo-title" id="top"><div class="row flex-center"><div class="text-center"> <h1 class=".cn" id="WasmVM">WasmVM</h1></div></div></div><div class="section"><div class="flex-spaces tabs">
 <input id="tab1" type="radio" name="tabs" checked="">
-<label id="label_tab1" for="tab1">Structure</label>
+<label id="label_tab1" for="tab1">Docker</label>
 
-<div class="content" id="content1"><p></p><h1 id="系統架構" class=" cn">系統架構</h1>
+<input id="tab2" type="radio" name="tabs">
+<label id="label_tab2" for="tab2">Structure</label>
+
+<input id="tab3" type="radio" name="tabs">
+<label id="label_tab3" for="tab3">Structure_en</label>
+
+<input id="tab4" type="radio" name="tabs">
+<label id="label_tab4" for="tab4">design-goals</label>
+
+<input id="tab5" type="radio" name="tabs">
+<label id="label_tab5" for="tab5">vscode-docker</label>
+
+<div class="content" id="content1"><p></p><h1 id="Docker%20開發環境" class=" cn">Docker 開發環境</h1>
+<p>WasmVM 可以在 docker 中開發，透過以下幾個步驟安裝：</p>
+<ul>
+<li>透過 <a href="https://github.com/toolbuddy/ssfw"><code>toolbuddy/ssfw</code></a> 安裝 <em>docker</em></li>
+</ul>
+<pre><code>source &lt;(curl -s https://raw.githubusercontent.com/toolbuddy/ssfw/master/system/install_docker.sh)
+</code></pre>
+<ul>
+<li>將 <a href="https://hub.docker.com/r/wasmvm/develop/">images</a> 拉至本地端</li>
+</ul>
+<pre><code class="language-bash">[sudo] docker pull wasmvm/develop
+</code></pre>
+<ul>
+<li>掛載本地端 WASMVM 資料夾到 docker image 當中，並產生 docker container</li>
+</ul>
+<pre><code class="language-bash">docker run --rm -ti -w /home/WasmVM -v &lt;local 端的 WasmVM 的位置&gt;:/home/WasmVM wasmvm/develop bash
+</code></pre>
+<ul>
+<li>建立 build 資料夾</li>
+</ul>
+<pre><code>mkdir -p build &amp;&amp; cd build
+</code></pre>
+<ul>
+<li>執行 cmake</li>
+</ul>
+<pre><code>cmake -DCMAKE_BUILD_TYPE=Debug ..
+</code></pre>
+<ul>
+<li>執行 make</li>
+</ul>
+<pre><code>NUM_CORES=`grep -c ^processor /proc/cpuinfo`
+make -j${NUM_CORES}
+</code></pre>
+<p>或</p>
+<pre><code>"$(make -j`nproc --all`)"
+</code></pre>
+<ul>
+<li>跑單元測試</li>
+</ul>
+<pre><code>ctest
+</code></pre>
+<p></p></div><div class="content" id="content2"><p></p><h1 id="系統架構" class=" cn">系統架構</h1>
 <p><img src="./res/Structure.svg" alt=""></p>
-<p>WasmVM 主要分成三個元件，載入器(Loader)、執行器(Executor)和及時編譯器(JIT)，每個元件中有不同的模組執行各種工作。圖中包住許多零件的大長方形表示各個元件，白色的小長方形表示各個模組。</p>
+<p>WasmVM 主要分成三個元件，載入元件(Loader)、執行元件(Executor)加速元件(Accelerator)，每個元件中有不同的模組執行各種工作。圖中包住許多零件的大長方形表示各個元件，白色的小長方形表示各個模組。</p>
 <p>元件和模組之間會進行各種資料轉換，各種資料結構用藍色平行四邊形表示。</p>
-<p>在執行器(Executor)元件中，執行的函式分成原生函式(Native)、直譯函式(Interpreted)和系統呼叫(Syscall)三種，以淺綠色圓角矩形表示。</p>
+<p>在執行元件(Executor)中，執行的函式分成原生函式(Native)、執行函式(Runtime)和系統呼叫(Syscall)三種，以淺綠色圓角矩形表示。</p>
 <p>以下將會介紹各個元件，資料格式的部分請參考 <a href="https://webassembly.github.io/spec/core/index.html">WebAssembly 規格</a></p>
 <h1 id="載入元件%20(Loader)" class=" cn">載入元件 (Loader)</h1>
 <p>在程式中直接操作 Wasm 位元碼很不方便，而且目前我們也沒辦法直接在機器上執行 Wasm 位元碼。載入元件的工作就是將 Wasm 解析成方便程式操作的格式，驗證要執行的 Wasm 模組，並且載入到執行器中。</p>
@@ -17,14 +70,14 @@
 <h2 id="驗證器%20(Validator)" class=" cn">驗證器 (Validator)</h2>
 <p>在解碼器產生 Wasm 模組後，驗證器會依據規格書上的驗證定義，驗證 Wasm 模組的行為。</p>
 <p>如果 Wasm 模組的行為不符合 Wasm 規格，驗證器會回報錯誤。</p>
-<p>在驗證完成之後，驗證器會將 Wasm 模組傳給實例產生器和及時編譯元件的分析器。</p>
+<p>在驗證完成之後，驗證器會將 Wasm 模組傳給實例產生器。</p>
 <h2 id="實例產生器%20(Instantiator)" class=" cn">實例產生器 (Instantiator)</h2>
 <p>解碼器產生的 Wasm 模組包含很多資訊，方便分析和驗證，但是不方便執行。</p>
-<p>實例產生器會把 Wasm 模組轉換成 Wasm 實例，並存進執行元件的儲存空間(Store)，準備執行。</p>
-<h1 id="及時編譯元件%20(JIT)" class=" cn">及時編譯元件 (JIT)</h1>
+<p>實例產生器會把 Wasm 模組轉換成 Wasm 實例，存進執行元件的儲存空間(Store)準備執行，同時傳給加速元件的分析器。</p>
+<h1 id="加速元件%20(Accelerator)" class=" cn">加速元件 (Accelerator)</h1>
 <p>及時編譯 (Just-In-Time compile) 是在程式正在執行或快要執行的時候，把程式編譯成可以直接執行的機器碼，加快之後執行時的效能。</p>
-<p>及時編譯元件會對 Wasm 模組做分析，把必要的函式編譯成機器碼加速執行。</p>
-<p>及時編譯元件包含以下模組：</p>
+<p>加速元件會對 Wasm 模組做分析，把必要的函式編譯成機器碼加速執行。</p>
+<p>加速元件包含以下模組：</p>
 <h2 id="分析器%20(Analyzer)" class=" cn">分析器 (Analyzer)</h2>
 <p>分析器會分析 Wasm 模組內每個函式的使用頻率和特性，決定哪些函式會被及時編譯成原生函式(Native Function)，並安排及時編譯的優先順序。</p>
 <h2 id="及時編譯器%20(JIT Compiler)" class=" cn">及時編譯器 (JIT Compiler)</h2>
@@ -58,16 +111,156 @@ i32.const 0     ;; 編號
 unreachable     ;; 執行系統呼叫
 </code></pre>
 <p>執行完在堆疊裡就會出現結果 8</p>
-<p></p></div></div></div><div class="to-top"><a class="paper-btn margin" href="#top">Top</a><div class="row flex-spaces child-borders"><label class="paper-btn margin" for="modal-1">T.O.C.</label></div></div><input class="modal-state" id="modal-1" type="checkbox"><div class="modal modal-dialog"><label class="modal-bg" for="modal-1"></label><div class="modal-body"><label class="btn-close" for="modal-1">X </label><h4 class="modal-title">Table of Content</h4><h5 class="modal-subtitle">Click and go !</h5><div class="modal-body" id="toc"><h4 class="modal-text">Structure</h4><hr><ol><li><a href="#系統架構">系統架構</a></li><a href="#系統架構">
+<p></p></div><div class="content" id="content3"><p></p><h1 id="System%20Structure">System Structure</h1>
+<p><img src="./res/Structure.svg" alt=""></p>
+<p>WasmVM is built on top of three different components - loader, executor, and accelerator. Each component has different modules executing different tasks. As illustrated above, the larger rectangles with many parts inside represent the individual components, while the smaller white rectangles represent the individual modules.</p>
+<p>Data transformation is performed between components and modules, with each data structure being represented by a blue parallelogram.</p>
+<p>In the executor component, each function is represented as a light-green rounded rectangle and is categorized into three different category - Native Function, Runtime Function, and Syscall Function.</p>
+<p>In the following section, we go through each component of the system structure. For data format, please refer to the <a href="https://webassembly.github.io/spec/core/index.html">WebAssembly Spec</a>.</p>
+<h1 id="Loader">Loader</h1>
+<p>It is inconvenient to manipulate the Wasm bitcode directly in the program, and at the moment it is impossible to execute Wasm bitcode natively on the machine. The job of the loader component is to analyze and format Wasm into a format that programs could better interact with. Then, it validates the Wasm module to be executed and loads it into the executor.</p>
+<p>The loader component consists of the following modules:</p>
+<h2 id="Decoder">Decoder</h2>
+<p>The purpose of the decoder is to read the Wasm bitcode, analyzing the meaning of each byte, and transforming the bitcode into an easily-operatable Wasm module, and finally passing it on to the validator.</p>
+<p>Should the Wasm bitcode format not follow the Wasm spec, the decoder will halt all current decoding tasks and report the error.</p>
+<h2 id="Validator">Validator</h2>
+<p>After the decoder generates a module, the validator validates the Wasm module behaviour according to the validation definition according to the spec.</p>
+<p>If the Wasm module behaviour does not follow the Wasm specification, the validator will halt and report the error.</p>
+<p>After the validation has been completed, the validator will pass the Wasm module to the instantiator.</p>
+<h2 id="Instantiator">Instantiator</h2>
+<p>The Wasm module generated by the decoder contains much information used for analysis and validation, but is generally not used for execution.</p>
+<p>The instantiator transforms the Wasm module into a Wasm implementation, storing it into the executor Store and passing it to the accelerator analyzer.</p>
+<h1 id="Accelerator">Accelerator</h1>
+<p>JIT (Just-In-Time compile) occurs when the program is about to be executed or during the execution of the program. It compiles the application into machine code that can be executed natively, accelerating the performance during execution.</p>
+<p>The accelerator performs an analysis on the Wasm module, compiling the necessary functions into machine code for best performance.</p>
+<p>The accelerator consists of the following modules:</p>
+<h2 id="Analyzer">Analyzer</h2>
+<p>The analyzer analyzes the frequency traits of each function of the Wasm module, deciding which functions will be JIT compiled into Native Functions, and decide the priority of JIT compilation.</p>
+<h2 id="JIT%20Compiler">JIT Compiler</h2>
+<p>The JIT Compiler compiles the functions used by the Wasm module into Native Functions according to the priority generated by the analyzer and passing the functions to the executor.</p>
+<h1 id="Executor">Executor</h1>
+<p>After the implementation generator has finished processing, the executor executes the inital function within the main module, starting the application.</p>
+<p>The executor consists of the following modules:</p>
+<h2 id="Store">Store</h2>
+<p>The store structure corresponds to the store within the <a href="https://webassembly.github.io/spec/core/exec/runtime.html#store">Wasm specification</a>. It takes the results from the implementation generator, stores it into the corresponding table for later use with the core.</p>
+<p>Each running application may utilize multiple Cores, but the storage space will be shared.</p>
+<h2 id="Core">Core</h2>
+<p>The core is the main execution unit; it has its own <a href="https://webassembly.github.io/spec/core/exec/runtime.html#stack">stack</a> and program counter.</p>
+<p>The core obtains commands based on the program counter, performing the following,</p>
+<ol>
+<li>Executing Runtime Functions accordingly</li>
+<li>Triggering SysCall when encountering <code>unreachable</code></li>
+<li>Calling JIT'd Native Functions</li>
+</ol>
+<p>Each running application may utilize multiple cores. Each core has its own stack and program counter, but the storage space will be shared.</p>
+<h2 id="SysCall">SysCall</h2>
+<p>Some operations related to system (e.g. input/output) or operations not defined by WebAseembly cannot be executed within WebAssembly.</p>
+<p>According to the spec, it is possible to import foreign Native Functions, calling the functions directly for operation; however, WasmVM does not allow calling any foreign Native Functions.</p>
+<p>WasmVM must use <code>unreachable</code> to trigger a SysCall, then calls the corresponding SysCall function within the SysCall module to handle system calls, issuing operations indirectly - this is similar to a software interrupt.</p>
+<p>To execute a SysCall, you must first put in the required value within the stack as index, then put in the corresponding <code>i32</code> constant as a SysCall identifer; finally, use the <code>unreachable</code> command to trigger a SysCall.</p>
+<p>Example:</p>
+<p>Let's say we set <code>0</code> as the identifier of the SysCall for summation of two integer; in function-form, this is expressed as <code>add(i32 a, i32 b)</code>.</p>
+<p>Now if we want to assign <code>a</code> as <code>5</code>, <code>b</code> as <code>3</code>, and that we want to sum both the variables, we can write the following commands:</p>
+<pre><code>i32.const 5     ;; i32 a
+i32.const 3     ;; i32 b
+i32.const 0     ;; identifier
+unreachable     ;; execute SysCall
+</code></pre>
+<p>After execution, the result <code>8</code> will appear in the stack.</p>
+<p></p></div><div class="content" id="content4"><p></p><h1 id="設計理念" class=" cn">設計理念</h1>
+<p>現在 WebAssembly 主要是在網頁瀏覽器，協助 JavaScript 用比較貼近機器底層的方式處理運算的部份
+既然是"協助" JavaScript， 所以你要跑WebAssembly , 就算不透過瀏覽器，還是需要 JavaScript 的幫忙
+我覺得 WebAssembly 做為完整的組合語言，在瀏覽器以外的地方應該不需要 JavaScript 就能自己跑，而且應該能做到瀏覽器和桌面能共用同一份程式檔
+想像一下未來你可能可以把一個.wasm檔直接點兩下打開會動，放到網站上大家用瀏覽器看也會動，不用再特別寫成網站，甚至感覺上根本沒有網站/桌面的分隔</p>
+<p>要在桌面上執行有個問題:
+一般的桌面程式直接就是機器能看的懂的機器碼
+但是 WebAssembly 對機器來說根本看不懂，就像有人和你說印度話，你完全黃人問號 :thinking:
+所以我們需要一個師爺來翻譯翻譯
+師爺有很多種，一種是即時口譯，說一句翻一句做一句，在高階語言是直譯器，組合語言叫做虛擬機器
+一種是說的時候先記錄在紙上，再叫別人去做，在高階語言叫做編譯器，組合語言叫做組譯器(edited)
+還有一種師爺是記錄在腦海裡，記錄完自己馬上去做
+這個叫做即時編譯器(Just-in-time compiler, 簡稱 JIT compiler)</p>
+<p>WasmVM最主要的工作就是當那個師爺，而且我們有兩個師爺，平常先叫虛擬機器做事，但是即時編譯器同時也在編譯
+等即時編譯器編完，這段程式如果再重複被使用，就不用翻譯，直接跑翻完的就好</p>
+<p>另外，為了要在桌面跑，我們還必須設計 SysCall 的機制 ，透過 SysCall 來做到 WebAssembly 管不到的系統操作，這些在瀏覽器是用 JavaScript 解決，我們得自己幹
+所以 WasmVM 不只能執行 WebAssembly，我們還會定義一套完整又輕巧的架構，這也是 WasmVM 最重要的價值</p>
+<p></p></div><div class="content" id="content5"><p></p><h1 id="使用%20VSCode 搭配 Docker 開發 WasmVM" class=" cn">使用 VSCode 搭配 Docker 開發 WasmVM</h1>
+<p>在 VSCode 推出 VSCode Remote Container 擴充套件之後，可以透過 VSCode 和 Docker 建立簡單的開發環境</p>
+<h1 id="Step%201: 安裝並打開 Docker" class=" cn">Step 1: 安裝並打開 Docker</h1>
+<h2 id="Windows">Windows</h2>
+<h3 id="1-1.%20下載安裝檔後點開安裝檔，照著步驟安裝" class=" cn">1-1. 下載安裝檔後點開安裝檔，照著步驟安裝</h3>
+<p><a href="https://download.docker.com/win/stable/Docker%20for%20Windows%20Installer.exe">連結</a></p>
+<h3 id="1-2.%20打開 Docker" class=" cn">1-2. 打開 Docker</h3>
+<p>&lt;img src=https://docs.docker.com/docker-for-windows/images/docker-app-search.png width="25%"&gt;</p>
+<h2 id="Mac">Mac</h2>
+<h3 id="1-1.%20下載安裝檔" class=" cn">1-1. 下載安裝檔</h3>
+<p><a href="https://download.docker.com/mac/stable/Docker.dmg">連結</a></p>
+<h3 id="1-2.%20點開安裝檔，把 Docker 的圖示拖曳到資料夾的圖示" class=" cn">1-2. 點開安裝檔，把 Docker 的圖示拖曳到資料夾的圖示</h3>
+<p>&lt;img src=https://docs.docker.com/docker-for-mac/images/docker-app-drag.png /&gt;</p>
+<h3 id="1-3.%20打開 Docker" class=" cn">1-3. 打開 Docker</h3>
+<p><img src="https://docs.docker.com/docker-for-mac/images/docker-app-in-apps.png" alt=""></p>
+<h2 id="Ubuntu">Ubuntu</h2>
+<p>請參考 https://docs.docker.com/install/linux/docker-ce/ubuntu/#install-using-the-repository</p>
+<h1 id="Step%202: 安裝 VSCode" class=" cn">Step 2: 安裝 VSCode</h1>
+<p>到下載頁面 https://code.visualstudio.com/Download</p>
+<p>照自己的作業系統下載安裝檔來安裝</p>
+<h1 id="Step%203: 下載專案" class=" cn">Step 3: 下載專案</h1>
+<p>用 <code>git clone</code>，或是<a href="https://github.com/WasmVM/WasmVM/archive/master.zip">下載壓縮檔</a>之後解壓縮</p>
+<h1 id="Step%204: 用 VSCode 打開專案" class=" cn">Step 4: 用 VSCode 打開專案</h1>
+<p>在左上角的 <code>檔案(File)</code> 選單選 <code>打開資料夾 (Open Folder)</code></p>
+<h1 id="Step%205: 安裝 Remote Development 擴充套件" class=" cn">Step 5: 安裝 Remote Development 擴充套件</h1>
+<p>照著圖上的方式點選按鈕</p>
+<p><img src="./res/vscode-extension.png" alt=""></p>
+<h1 id="Step%206: 用 Remote Development 打開專案" class=" cn">Step 6: 用 Remote Development 打開專案</h1>
+<p>點選左下角的綠色按鈕之後，選 <code>Reopen Folder in Container</code></p>
+<p>&lt;img src="images/reopen-in-container.png" width="50%"/&gt;</p>
+<h1 id="Step%207: 設定 CMake" class=" cn">Step 7: 設定 CMake</h1>
+<p>點選左下角的 <code>CMake: Debug: Ready</code>，再點選 <code>GCC for x86_64</code> &gt; <code>Debug</code></p>
+<p>&lt;img src="images/configure-cmake.png" width="50%"/&gt;</p>
+<h1 id="Step%208: 編譯" class=" cn">Step 8: 編譯</h1>
+<p>點選靠近中間的 <code>Build: all</code> 可以編譯</p>
+<p>&lt;img src="images/build-project.png" width="50%"/&gt;</p>
+<p></p></div></div></div><div class="to-top"><a class="paper-btn margin" href="#top">Top</a><div class="row flex-spaces child-borders"><label class="paper-btn margin" for="modal-1">T.O.C.</label></div></div><input class="modal-state" id="modal-1" type="checkbox"><div class="modal modal-dialog"><label class="modal-bg" for="modal-1"></label><div class="modal-body"><label class="btn-close" for="modal-1">X </label><h4 class="modal-title">Table of Content</h4><h5 class="modal-subtitle">Click and go !</h5><div class="modal-body" id="toc"><h4 class="modal-text">Docker</h4><hr><ol><li><a href="#Docker%20開發環境">Docker 開發環境</a></li><a href="#Docker%20開發環境">
+</a></ol><h4 class="modal-text">Structure</h4><hr><ol><li><a href="#系統架構">系統架構</a></li><a href="#系統架構">
 </a><li><a href="#系統架構"></a><a href="#載入元件%20(Loader)">載入元件 (Loader)</a></li><a href="#載入元件%20(Loader)">
 </a><ol><a href="#載入元件%20(Loader)"></a><li><a href="#載入元件%20(Loader)"></a><a href="#解碼器%20(Decoder)">解碼器 (Decoder)</a></li><a href="#解碼器%20(Decoder)">
 </a><li><a href="#解碼器%20(Decoder)"></a><a href="#驗證器%20(Validator)">驗證器 (Validator)</a></li><a href="#驗證器%20(Validator)">
 </a><li><a href="#驗證器%20(Validator)"></a><a href="#實例產生器%20(Instantiator)">實例產生器 (Instantiator)</a></li><a href="#實例產生器%20(Instantiator)">
-</a></ol><li><a href="#及時編譯元件%20(JIT)">及時編譯元件 (JIT)</a></li><a href="#及時編譯元件%20(JIT)">
-</a><ol><a href="#及時編譯元件%20(JIT)"></a><li><a href="#及時編譯元件%20(JIT)"></a><a href="#分析器%20(Analyzer)">分析器 (Analyzer)</a></li><a href="#分析器%20(Analyzer)">
+</a></ol><li><a href="#加速元件%20(Accelerator)">加速元件 (Accelerator)</a></li><a href="#加速元件%20(Accelerator)">
+</a><ol><a href="#加速元件%20(Accelerator)"></a><li><a href="#加速元件%20(Accelerator)"></a><a href="#分析器%20(Analyzer)">分析器 (Analyzer)</a></li><a href="#分析器%20(Analyzer)">
 </a><li><a href="#分析器%20(Analyzer)"></a><a href="#及時編譯器%20(JIT" compiler)="">及時編譯器 (JIT Compiler)</a></li><a href="#及時編譯器%20(JIT" compiler)="">
 </a></ol><li><a href="#執行元件%20(Executor)">執行元件 (Executor)</a></li><a href="#執行元件%20(Executor)">
 </a><ol><a href="#執行元件%20(Executor)"></a><li><a href="#執行元件%20(Executor)"></a><a href="#儲存空間%20(Store)">儲存空間 (Store)</a></li><a href="#儲存空間%20(Store)">
 </a><li><a href="#儲存空間%20(Store)"></a><a href="#核心%20(Core)">核心 (Core)</a></li><a href="#核心%20(Core)">
 </a><li><a href="#核心%20(Core)"></a><a href="#系統呼叫%20(SysCall)">系統呼叫 (SysCall)</a></li><a href="#系統呼叫%20(SysCall)">
-</a></ol></ol></div></div></div><div class="row flex-right"><p>Created by <span class="badge secondary">@ToolBuddy/papoGen(papercss)</span></p></div></div></div></body></html>
+</a></ol></ol><h4 class="modal-text">Structure_en</h4><hr><ol><li><a href="#System%20Structure">System Structure</a></li><a href="#System%20Structure">
+</a><li><a href="#System%20Structure"></a><a href="#Loader">Loader</a></li><a href="#Loader">
+</a><ol><a href="#Loader"></a><li><a href="#Loader"></a><a href="#Decoder">Decoder</a></li><a href="#Decoder">
+</a><li><a href="#Decoder"></a><a href="#Validator">Validator</a></li><a href="#Validator">
+</a><li><a href="#Validator"></a><a href="#Instantiator">Instantiator</a></li><a href="#Instantiator">
+</a></ol><li><a href="#Accelerator">Accelerator</a></li><a href="#Accelerator">
+</a><ol><a href="#Accelerator"></a><li><a href="#Accelerator"></a><a href="#Analyzer">Analyzer</a></li><a href="#Analyzer">
+</a><li><a href="#Analyzer"></a><a href="#JIT%20Compiler">JIT Compiler</a></li><a href="#JIT%20Compiler">
+</a></ol><li><a href="#Executor">Executor</a></li><a href="#Executor">
+</a><ol><a href="#Executor"></a><li><a href="#Executor"></a><a href="#Store">Store</a></li><a href="#Store">
+</a><li><a href="#Store"></a><a href="#Core">Core</a></li><a href="#Core">
+</a><li><a href="#Core"></a><a href="#SysCall">SysCall</a></li><a href="#SysCall">
+</a></ol></ol><h4 class="modal-text">design-goals</h4><hr><ol><li><a href="#設計理念">設計理念</a></li><a href="#設計理念">
+</a></ol><h4 class="modal-text">vscode-docker</h4><hr><ol><li><a href="#使用%20VSCode" 搭配="" docker="" 開發="" wasmvm="">使用 VSCode 搭配 Docker 開發 WasmVM</a></li><a href="#使用%20VSCode" 搭配="" docker="" 開發="" wasmvm="">
+</a><li><a href="#使用%20VSCode" 搭配="" docker="" 開發="" wasmvm=""></a><a href="#Step%201:" 安裝並打開="" docker="">Step 1: 安裝並打開 Docker</a></li><a href="#Step%201:" 安裝並打開="" docker="">
+</a><ol><a href="#Step%201:" 安裝並打開="" docker=""></a><li><a href="#Step%201:" 安裝並打開="" docker=""></a><a href="#Windows">Windows</a></li><a href="#Windows">
+</a><ol><a href="#Windows"></a><li><a href="#Windows"></a><a href="#1-1.%20下載安裝檔後點開安裝檔，照著步驟安裝">1-1. 下載安裝檔後點開安裝檔，照著步驟安裝</a></li><a href="#1-1.%20下載安裝檔後點開安裝檔，照著步驟安裝">
+</a><li><a href="#1-1.%20下載安裝檔後點開安裝檔，照著步驟安裝"></a><a href="#1-2.%20打開" docker="">1-2. 打開 Docker</a></li><a href="#1-2.%20打開" docker="">
+</a></ol><li><a href="#Mac">Mac</a></li><a href="#Mac">
+</a><ol><a href="#Mac"></a><li><a href="#Mac"></a><a href="#1-1.%20下載安裝檔">1-1. 下載安裝檔</a></li><a href="#1-1.%20下載安裝檔">
+</a><li><a href="#1-1.%20下載安裝檔"></a><a href="#1-2.%20點開安裝檔，把" docker="" 的圖示拖曳到資料夾的圖示="">1-2. 點開安裝檔，把 Docker 的圖示拖曳到資料夾的圖示</a></li><a href="#1-2.%20點開安裝檔，把" docker="" 的圖示拖曳到資料夾的圖示="">
+</a><li><a href="#1-2.%20點開安裝檔，把" docker="" 的圖示拖曳到資料夾的圖示=""></a><a href="#1-3.%20打開" docker="">1-3. 打開 Docker</a></li><a href="#1-3.%20打開" docker="">
+</a></ol><li><a href="#Ubuntu">Ubuntu</a></li><a href="#Ubuntu">
+</a></ol><li><a href="#Step%202:" 安裝="" vscode="">Step 2: 安裝 VSCode</a></li><a href="#Step%202:" 安裝="" vscode="">
+</a><li><a href="#Step%202:" 安裝="" vscode=""></a><a href="#Step%203:" 下載專案="">Step 3: 下載專案</a></li><a href="#Step%203:" 下載專案="">
+</a><li><a href="#Step%203:" 下載專案=""></a><a href="#Step%204:" 用="" vscode="" 打開專案="">Step 4: 用 VSCode 打開專案</a></li><a href="#Step%204:" 用="" vscode="" 打開專案="">
+</a><li><a href="#Step%204:" 用="" vscode="" 打開專案=""></a><a href="#Step%205:" 安裝="" remote="" development="" 擴充套件="">Step 5: 安裝 Remote Development 擴充套件</a></li><a href="#Step%205:" 安裝="" remote="" development="" 擴充套件="">
+</a><li><a href="#Step%205:" 安裝="" remote="" development="" 擴充套件=""></a><a href="#Step%206:" 用="" remote="" development="" 打開專案="">Step 6: 用 Remote Development 打開專案</a></li><a href="#Step%206:" 用="" remote="" development="" 打開專案="">
+</a><li><a href="#Step%206:" 用="" remote="" development="" 打開專案=""></a><a href="#Step%207:" 設定="" cmake="">Step 7: 設定 CMake</a></li><a href="#Step%207:" 設定="" cmake="">
+</a><li><a href="#Step%207:" 設定="" cmake=""></a><a href="#Step%208:" 編譯="">Step 8: 編譯</a></li><a href="#Step%208:" 編譯="">
+</a></ol></div></div></div><div class="row flex-right"><p>Created by <span class="badge secondary">@ToolBuddy/papoGen(papercss)</span></p></div></div></div></body></html>

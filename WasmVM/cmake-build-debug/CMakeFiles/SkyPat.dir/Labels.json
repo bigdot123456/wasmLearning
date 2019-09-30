@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/Users/liqinghua/git/wasmLearning/WasmVM/cmake-build-debug/CMakeFiles/SkyPat"
+		},
+		{
+			"file" : "/Users/liqinghua/git/wasmLearning/WasmVM/cmake-build-debug/CMakeFiles/SkyPat.rule"
+		},
+		{
+			"file" : "/Users/liqinghua/git/wasmLearning/WasmVM/cmake-build-debug/CMakeFiles/SkyPat-complete.rule"
+		},
+		{
+			"file" : "/Users/liqinghua/git/wasmLearning/WasmVM/cmake-build-debug/SkyPat/src/SkyPat-stamp/SkyPat-install.rule"
+		},
+		{
+			"file" : "/Users/liqinghua/git/wasmLearning/WasmVM/cmake-build-debug/SkyPat/src/SkyPat-stamp/SkyPat-mkdir.rule"
+		},
+		{
+			"file" : "/Users/liqinghua/git/wasmLearning/WasmVM/cmake-build-debug/SkyPat/src/SkyPat-stamp/SkyPat-download.rule"
+		},
+		{
+			"file" : "/Users/liqinghua/git/wasmLearning/WasmVM/cmake-build-debug/SkyPat/src/SkyPat-stamp/SkyPat-update.rule"
+		},
+		{
+			"file" : "/Users/liqinghua/git/wasmLearning/WasmVM/cmake-build-debug/SkyPat/src/SkyPat-stamp/SkyPat-patch.rule"
+		},
+		{
+			"file" : "/Users/liqinghua/git/wasmLearning/WasmVM/cmake-build-debug/SkyPat/src/SkyPat-stamp/SkyPat-configure.rule"
+		},
+		{
+			"file" : "/Users/liqinghua/git/wasmLearning/WasmVM/cmake-build-debug/SkyPat/src/SkyPat-stamp/SkyPat-build.rule"
+		},
+		{
+			"file" : "/Users/liqinghua/git/wasmLearning/WasmVM/cmake-build-debug/SkyPat/src/SkyPat-stamp/SkyPat-autogen.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"SkyPat"
+		],
+		"name" : "SkyPat"
+	}
+}

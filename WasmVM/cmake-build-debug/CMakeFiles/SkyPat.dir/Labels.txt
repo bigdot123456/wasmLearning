@@ -1,0 +1,14 @@
+# Target labels
+ SkyPat
+# Source files and their labels
+/Users/liqinghua/git/wasmLearning/WasmVM/cmake-build-debug/CMakeFiles/SkyPat
+/Users/liqinghua/git/wasmLearning/WasmVM/cmake-build-debug/CMakeFiles/SkyPat.rule
+/Users/liqinghua/git/wasmLearning/WasmVM/cmake-build-debug/CMakeFiles/SkyPat-complete.rule
+/Users/liqinghua/git/wasmLearning/WasmVM/cmake-build-debug/SkyPat/src/SkyPat-stamp/SkyPat-install.rule
+/Users/liqinghua/git/wasmLearning/WasmVM/cmake-build-debug/SkyPat/src/SkyPat-stamp/SkyPat-mkdir.rule
+/Users/liqinghua/git/wasmLearning/WasmVM/cmake-build-debug/SkyPat/src/SkyPat-stamp/SkyPat-download.rule
+/Users/liqinghua/git/wasmLearning/WasmVM/cmake-build-debug/SkyPat/src/SkyPat-stamp/SkyPat-update.rule
+/Users/liqinghua/git/wasmLearning/WasmVM/cmake-build-debug/SkyPat/src/SkyPat-stamp/SkyPat-patch.rule
+/Users/liqinghua/git/wasmLearning/WasmVM/cmake-build-debug/SkyPat/src/SkyPat-stamp/SkyPat-configure.rule
+/Users/liqinghua/git/wasmLearning/WasmVM/cmake-build-debug/SkyPat/src/SkyPat-stamp/SkyPat-build.rule
+/Users/liqinghua/git/wasmLearning/WasmVM/cmake-build-debug/SkyPat/src/SkyPat-stamp/SkyPat-autogen.rule

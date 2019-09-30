@@ -1,0 +1,5 @@
+my_case.o: \
+  /Users/liqinghua/git/wasmLearning/WasmVM/cmake-build-debug/SkyPat/src/SkyPat/examples/multi_assert/my_case.cpp \
+  /Users/liqinghua/git/wasmLearning/WasmVM/cmake-build-debug/SkyPat/src/SkyPat/examples/multi_assert/my_case.h
+
+/Users/liqinghua/git/wasmLearning/WasmVM/cmake-build-debug/SkyPat/src/SkyPat/examples/multi_assert/my_case.h:
